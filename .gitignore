@@ -1,0 +1,10 @@
+# .gitignore
+
+__pycache__/
+errors.log
+company_details.xlsx
+verify_s_hidden.txt
+ok.json
+hits.json
+company_details.json
+state.json

@@ -34,6 +34,35 @@ from api_client import post_company_with_429_retry
     # 單筆 API 呼叫與 429 重試
 from parsing_utils import pick_year_row, is_A_to_K, row_is_normal, upsert_nested
     # 解析回應資料
+from pathlib import Path
+
+def _interactive_args_if_needed() -> None:
+    """
+    If no CLI args are provided (double-click on Windows), prompt the user
+    for required parameters and extend sys.argv accordingly. No change to
+    the original business logic beyond argument population.
+    """
+    if len(sys.argv) > 1:
+        return
+
+    print("=== fbfh-trade runner 參數設定 ===")
+    while True:
+        year = input("請輸入民國年 (例如 113): ").strip()
+        if year.isdigit():
+            break
+        print("年分需為數字，請重新輸入。")
+
+    while True:
+        sleep_str = input("請輸入輪詢間隔秒數 (例如 0.1): ").strip()
+        try:
+            float(sleep_str)
+            break
+        except ValueError:
+            print("間隔需為數字（可含小數），請重新輸入。")
+
+    sys.argv.extend(["--year", year, "--sleep", sleep_str])
+
+_interactive_args_if_needed()
 
 
 def parse_args() -> argparse.Namespace:

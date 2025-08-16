@@ -68,24 +68,6 @@ git clone git@github.com:Sophisycho/fbfh-trade.git
 cd fbfh-trade
 ```
 
-### 2) 建立虛擬環境並安裝相依
-
-（Windows PowerShell）
-
-```powershell
-py -3.12 -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-```
-
-若沒有 `requirements.txt`，可先安裝最小集：
-
-```powershell
-python -m pip install requests openpyxl beautifulsoup4 brotli
-```
-
-> `beautifulsoup4`、`brotli` 為建議項；缺少時程式亦能用後備方式運作，但建議安裝以提高成功率與相容性。
 
 ---
 

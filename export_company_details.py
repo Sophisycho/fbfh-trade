@@ -2,27 +2,8 @@
 # -*- coding: utf-8 -*-
 
 """
-Read company_details.json in the same directory and export to company_details.xlsx.
-- One row per (business_account_no, rating_year).
-- Column order is defined by HEADERS (top of this file).
-- Designed for easy future formatting via FORMATTERS / apply_custom_formatting().
-
-JSON expected shape (example):
-{
-  "00040132": {
-    "113": {
-      "rating_year": "113",
-      "import_total_code": "J",
-      "export_total_code": "M",
-      "details": {
-        "business_account_no": "00040132",
-        "company_name_zh": "...",
-        ...
-      }
-    }
-  },
-  ...
-}
+Read company_details.json in the same directory as the executable
+and export to company_details.xlsx.
 """
 
 from __future__ import annotations
@@ -31,6 +12,8 @@ import json
 import sys
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, List, Tuple
+
+from persistence import BASE_DIR  # 關鍵：exe 同目錄
 
 try:
     from openpyxl import Workbook
@@ -68,7 +51,6 @@ HEADERS: List[str] = [
     "出口項目",
 ]
 
-# ========【如需客製欄位取值，對應在這裡建立 extractor】========
 Extractor = Callable[[str, str, Dict[str, Any]], Any]  # (ban_no, year_key, year_payload) -> value
 
 
@@ -81,7 +63,7 @@ def _coalesce(*values: Any, sep: str = " / ") -> str:
     return sep.join(parts)
 
 
-FIELD_EXTRACTORS: Dict[str, Extractor] = {
+FIELD_EXTRACTORS: Dict[str, Callable[[str, str, Dict[str, Any]], Any]] = {
     "統一編號": lambda ban, y, p: ban,
     "公司名稱": lambda ban, y, p: _get_details(p).get("company_name_zh", ""),
     "電話號碼": lambda ban, y, p: _coalesce(
@@ -107,11 +89,8 @@ FIELD_EXTRACTORS: Dict[str, Extractor] = {
     "出口項目": lambda ban, y, p: _get_details(p).get("items_for_export", ""),
 }
 
-# ========【留給未來格式處理用的 hooks】========
-# key: header -> formatter(value) -> formatted_value
 FORMATTERS: Dict[str, Callable[[Any], Any]] = {
-    # 例：將統一編號左側補零到 8 碼
-    # "統一編號": lambda v: str(v).zfill(8),
+    # 例如需要可在此補上格式化規則
 }
 
 
@@ -122,7 +101,6 @@ def apply_custom_formatting(row_values: Dict[str, Any]) -> Dict[str, Any]:
             try:
                 row_values[header] = fmt(row_values[header])
             except Exception:
-                # 保守處理：格式轉換失敗就維持原值
                 pass
     return row_values
 
@@ -136,10 +114,7 @@ def load_json(path: Path) -> Dict[str, Any]:
 
 
 def iter_records(data: Dict[str, Any]) -> Iterable[Tuple[str, str, Dict[str, Any]]]:
-    """
-    Yield (ban_no, year_key, year_payload).
-    Iterate all companies and all years for each company.
-    """
+    """Yield (ban_no, year_key, year_payload)."""
     for ban_no, years in (data or {}).items():
         if not isinstance(years, dict):
             continue
@@ -164,9 +139,7 @@ def write_excel(rows: List[Dict[str, Any]], output_path: Path) -> None:
     ws = wb.active
     ws.title = "company_details"
 
-    # Header
     ws.append(HEADERS)
-    # Rows
     for row in rows:
         ws.append([row.get(h, "") for h in HEADERS])
 
@@ -179,7 +152,6 @@ def _apply_sheet_format(ws: Worksheet) -> None:
     ws.freeze_panes = "A2"
     ws.auto_filter.ref = ws.dimensions
 
-    # adjust width (rough estimate)
     max_len: Dict[int, int] = {}
     for r in ws.iter_rows(values_only=True):
         for idx, cell in enumerate(r, start=1):
@@ -188,13 +160,12 @@ def _apply_sheet_format(ws: Worksheet) -> None:
 
     for idx, length in max_len.items():
         col = get_column_letter(idx)
-        # add padding; cap width to avoid excessive sizes
         ws.column_dimensions[col].width = min(length + 2, 60)
 
 
 def main() -> None:
     """CLI entry."""
-    base = Path(__file__).resolve().parent
+    base = BASE_DIR  # 關鍵：exe 同目錄
     input_path = base / "company_details.json"
     output_path = base / "company_details.xlsx"
 
@@ -208,9 +179,7 @@ def main() -> None:
         print(f"[ERROR] JSON 解析失敗：{exc}", file=sys.stderr)
         sys.exit(2)
 
-    rows: List[Dict[str, Any]] = []
-    for ban_no, year_key, payload in iter_records(data):
-        rows.append(build_row(ban_no, year_key, payload))
+    rows: List[Dict[str, Any]] = [build_row(b, y, p) for b, y, p in iter_records(data)]
 
     if not rows:
         print("[WARN] 沒有可輸出的資料。仍會產生含表頭的空檔。")
@@ -226,4 +195,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

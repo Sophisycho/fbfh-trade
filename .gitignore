@@ -9,3 +9,5 @@ hits.json
 company_details.json
 state.json
 .venv/
+*bak*
+*corrupt*

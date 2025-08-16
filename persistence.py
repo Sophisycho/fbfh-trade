@@ -5,28 +5,30 @@
 persistence.py
 狀態與資料持久化工具（state.json / hits.json / ok.json / errors.log）。
 
-強化（不改動業務邏輯）：
-- 所有檔案皆固定相對於本檔案所在目錄（避免 CWD 影響）。
-- JSON 採原子寫入（.tmp → fsync → os.replace）。
-- 寫入前建立備份，但只保留最新 N 份（預設 1，可用環境變數調整）。
-- 若內容未變更，則略過寫入與備份（降低噪音與 IO）。
-- 讀檔若 JSONDecodeError，將原檔移至 .corrupt.<timestamp>，並記錄 errors.log。
-
-可用環境變數：
-- PERSIST_BACKUP_KEEP：整數，保留的備份份數（預設 "1"）。
-- PERSIST_BACKUP_DISABLE：設 "1" 以停用備份（不建議在生產使用）。
+更新重點：
+- BASE_DIR 會在 PyInstaller frozen 模式下指向 exe 同目錄（Path(sys.executable).parent），
+  非 frozen 則為本檔所在目錄（方便開發期）。
+- 其餘原子寫入、備份、損毀搬移機制維持不變。
 """
 
 from __future__ import annotations
 import json
 import os
+import sys
 import shutil
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, List
 
+# === 取得應用程式根目錄（exe 同目錄 / 或腳本目錄） ===
+def get_app_dir() -> Path:
+    """回傳應用程式根目錄：PyInstaller 下為 exe 同目錄，否則為此檔案所在目錄。"""
+    if getattr(sys, "frozen", False) and hasattr(sys, "executable"):
+        return Path(sys.executable).resolve().parent
+    return Path(__file__).resolve().parent
+
 # === 設定 ===
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = get_app_dir()
 BACKUP_KEEP = int(os.getenv("PERSIST_BACKUP_KEEP", "1"))
 BACKUP_ENABLED = os.getenv("PERSIST_BACKUP_DISABLE", "0") != "1"
 
@@ -68,7 +70,6 @@ def _prune_backups(path: Path) -> None:
         try:
             old.unlink(missing_ok=True)
         except Exception:
-            # 靜默忽略，避免影響主流程
             pass
 
 
@@ -135,7 +136,6 @@ def save_state(next_number: int) -> None:
             if STATE_PATH.read_text(encoding="utf-8") == payload:
                 return  # 無變更，略過
         except Exception:
-            # 若讀取失敗，仍嘗試備份並寫入
             pass
     _backup_if_exists(STATE_PATH)
     _atomic_write_text(STATE_PATH, payload)
@@ -162,7 +162,6 @@ def save_json(path: Path, obj: Dict) -> None:
             if path.read_text(encoding="utf-8") == payload:
                 return  # 無變更，略過
         except Exception:
-            # 若讀取失敗，仍嘗試備份並寫入
             pass
     _backup_if_exists(path)
     _atomic_write_text(path, payload)

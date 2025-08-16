@@ -8,3 +8,4 @@ ok.json
 hits.json
 company_details.json
 state.json
+.venv/

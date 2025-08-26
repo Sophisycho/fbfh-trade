@@ -35,6 +35,7 @@ from api_client import post_company_with_429_retry
 from parsing_utils import pick_year_row, is_A_to_K, row_is_normal, upsert_nested
     # 解析回應資料
 from pathlib import Path
+from main import run_pipeline
 
 def _interactive_args_if_needed() -> None:
     """
@@ -193,6 +194,10 @@ def main() -> None:
                         log.info(
                             f"HIT {vat}  year={args.year}  import={import_grade}  export={export_grade}"
                         )
+                        try:
+                            run_pipeline()
+                        except Exception as exc:
+                            log.error(f"run_pipeline failed: {exc!r}")
 
             processed += 1
 

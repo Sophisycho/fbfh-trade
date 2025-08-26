@@ -93,8 +93,8 @@ def run_pipeline() -> None:
     if last_pair:
         excel_last = _excel_last_pair(excel_path)
         if excel_last != last_pair:
-            print("company_details.json 與 company_details.xlsx 不同步，請先執行 export_company_details.py")
-            return
+            print("發現 company_details.json 與 company_details.xlsx 不同步，準備自動更新")
+            export_excel()
 
     hits_to_process = _slice_hits_after(input_path, last_pair)
     if not hits_to_process:

@@ -25,6 +25,7 @@ from persistence import (
     append_error_log,
     HITS_PATH,
     OK_PATH,
+    BASE_DIR,
 )
 from vat_utils import uniform_number_stream
     # 產生合法統編
@@ -35,6 +36,15 @@ from api_client import post_company_with_429_retry
 from parsing_utils import pick_year_row, is_A_to_K, row_is_normal, upsert_nested
     # 解析回應資料
 from pathlib import Path
+from main import run_pipeline
+
+COMPANY_DETAILS_PATH = BASE_DIR / "company_details.json"
+
+def _pair_count(d: Dict) -> int:
+    try:
+        return sum(len(v) for v in d.values() if isinstance(v, dict))
+    except Exception:
+        return 0
 
 def _interactive_args_if_needed() -> None:
     """
@@ -119,10 +129,20 @@ def main() -> None:
     # 載入既有結果（若檔毀損會被移到 .corrupt.<ts>，並回傳空 dict）
     hits = load_json(HITS_PATH)
     ok_map = load_json(OK_PATH)
+    details = load_json(COMPANY_DETAILS_PATH)
 
     # 啟動時輸出載入統計，避免一開始就「空集合」卻沒感覺到
     log.info(f"載入 ok.json：{_count_nested(ok_map)}")
     log.info(f"載入 hits.json：{_count_nested(hits)}")
+    if _pair_count(details) != _pair_count(hits):
+        log.info("company_details.json 與 hits.json 進度不一致，先行執行 run_pipeline() 補齊…")
+        while _pair_count(details) != _pair_count(hits):
+            try:
+                run_pipeline()
+            except Exception as exc:
+                log.error(f"run_pipeline failed: {exc!r}")
+                break
+            details = load_json(COMPANY_DETAILS_PATH)
     log.info(f"續跑起點：{start_valid}")
 
     # 初始化生成器與 HTTP session
@@ -193,6 +213,10 @@ def main() -> None:
                         log.info(
                             f"HIT {vat}  year={args.year}  import={import_grade}  export={export_grade}"
                         )
+                        try:
+                            run_pipeline()
+                        except Exception as exc:
+                            log.error(f"run_pipeline failed: {exc!r}")
 
             processed += 1
 

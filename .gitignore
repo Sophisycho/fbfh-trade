@@ -11,3 +11,4 @@ state.json
 .venv/
 *bak*
 *corrupt*
+.DS_Store

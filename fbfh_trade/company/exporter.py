@@ -9,6 +9,8 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
+from fbfh_trade.persistence import get_app_dir
+
 try:
     # 優先使用 openpyxl 內建的非法字元正規表示式
     from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE  # type: ignore
@@ -21,7 +23,7 @@ from openpyxl.worksheet.worksheet import Worksheet
 # ----------------------------
 # 常數與 I/O 路徑
 # ----------------------------
-BASE_DIR = Path(__file__).resolve().parents[2]
+BASE_DIR = get_app_dir()
 INPUT_JSON = BASE_DIR / "company_details.json"
 OUTPUT_XLSX = BASE_DIR / "company_details.xlsx"
 

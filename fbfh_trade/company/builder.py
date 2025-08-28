@@ -17,8 +17,8 @@ company_details_builder.py
 5) 依指定 Key → 索引對應重構 retrieveDataList，並把評級年度、進出口評級英文代碼一併寫入輸出 JSON。
 
 依賴：
-- simple_logger.py（同目錄）
-- verify_s_hidden_client.py（同目錄，需提供 get_verify_s_hidden）
+- fbfh_trade.logger
+- verify_client.py（同封裝，需提供 get_verify_s_hidden）
 
 公開 API：
     build_and_save(
@@ -37,8 +37,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import requests
-import simple_logger as log
-import verify_s_hidden_client as vsc
+import fbfh_trade.logger as log
+from fbfh_trade.company import verify_client as vsc
 
 
 API_ENDPOINT = "https://fbfh.trade.gov.tw/fb/common/popBasic.action"

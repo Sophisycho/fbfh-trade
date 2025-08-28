@@ -15,10 +15,10 @@ from typing import Dict
 
 from openpyxl import load_workbook
 
-import simple_logger as log
-from company_details_builder import build_and_save
-from export_company_details import main as export_excel
-from persistence import BASE_DIR, HITS_PATH
+import fbfh_trade.logger as log
+from fbfh_trade.company.builder import build_and_save
+from fbfh_trade.company.exporter import main as export_excel
+from fbfh_trade.persistence import BASE_DIR, HITS_PATH
 
 COMPANY_DETAILS_JSON = BASE_DIR / "company_details.json"
 COMPANY_DETAILS_XLSX = BASE_DIR / "company_details.xlsx"

@@ -13,10 +13,10 @@ import time
 from typing import Dict, Optional
 
 import requests
-import simple_logger as log
+import fbfh_trade.logger as log
 
-from persistence import save_state, save_json, append_error_log, HITS_PATH, OK_PATH
-from http_utils import decode_body
+from fbfh_trade.persistence import save_state, save_json, append_error_log, HITS_PATH, OK_PATH
+from fbfh_trade.http import decode_body
 
 API_URL = "https://fbfh.trade.gov.tw/fb/common/popGrade.action"
 
@@ -25,7 +25,7 @@ VERIFY_S_HIDDEN = "1DrSTL1zk6l5itRvaE4eGQ=="
 
 # 可選：同目錄若存在 verify_s_hidden_client.py，將在特定錯誤時嘗試刷新
 try:
-    from verify_s_hidden_client import get_verify_s_hidden  # type: ignore
+    from fbfh_trade.company.verify_client import get_verify_s_hidden  # type: ignore
 except Exception:
     get_verify_s_hidden = None  # type: ignore
 

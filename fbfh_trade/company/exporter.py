@@ -21,7 +21,7 @@ from openpyxl.worksheet.worksheet import Worksheet
 # ----------------------------
 # 常數與 I/O 路徑
 # ----------------------------
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve().parents[2]
 INPUT_JSON = BASE_DIR / "company_details.json"
 OUTPUT_XLSX = BASE_DIR / "company_details.xlsx"
 

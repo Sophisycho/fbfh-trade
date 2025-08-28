@@ -28,24 +28,26 @@ from persistence import (
     BASE_DIR,
 )
 from vat_utils import uniform_number_stream
-    # 產生合法統編
+# 產生合法統編
 from http_utils import create_session
-    # Session 與重試
+# Session 與重試
 from api_client import post_company_with_429_retry
-    # 單筆 API 呼叫與 429 重試
+# 單筆 API 呼叫與 429 重試
 from parsing_utils import pick_year_row, is_A_to_K, row_is_normal, upsert_nested
-    # 解析回應資料
+# 解析回應資料
 from pathlib import Path
 from company_details_builder import build_and_save
 from export_company_details import main as export_excel
 
 COMPANY_DETAILS_PATH = BASE_DIR / "company_details.json"
 
+
 def _pair_count(d: Dict) -> int:
     try:
         return sum(len(v) for v in d.values() if isinstance(v, dict))
     except Exception:
         return 0
+
 
 def _interactive_args_if_needed() -> None:
     """
@@ -73,6 +75,7 @@ def _interactive_args_if_needed() -> None:
 
     sys.argv.extend(["--year", year, "--sleep", sleep_str])
 
+
 _interactive_args_if_needed()
 
 
@@ -81,25 +84,32 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="自動產生合法統編並查 API；含 429 重試與致命錯誤立即停機紀錄。"
     )
-    parser.add_argument("--year", type=int, required=True, help="查詢年度（例如 113）。")
-    parser.add_argument("--start", default=None, help="起始 8 碼（含）。不指定則讀 state.json。")
-    parser.add_argument("--sleep", type=float, default=0.0, help="每次 API 呼叫間隔秒數。")
+    parser.add_argument("--year", type=int, required=True,
+                        help="查詢年度（例如 113）。")
+    parser.add_argument("--start", default=None,
+                        help="起始 8 碼（含）。不指定則讀 state.json。")
+    parser.add_argument("--sleep", type=float,
+                        default=0.0, help="每次 API 呼叫間隔秒數。")
     parser.add_argument(
         "--checkpoint-every", type=int, default=200, help="每處理 N 個合法統編就落盤。"
     )
     parser.add_argument(
         "--progress-every", type=int, default=20, help="每處理 N 個合法統編就輸出一次進度。"
     )
-    parser.add_argument("--pool-size", type=int, default=20, help="HTTP 連線池大小。")
-    parser.add_argument("--retries", type=int, default=3, help="失敗重試次數（非 429）。")
-    parser.add_argument("--backoff", type=float, default=0.3, help="重試退避因子（非 429）。")
+    parser.add_argument("--pool-size", type=int,
+                        default=20, help="HTTP 連線池大小。")
+    parser.add_argument("--retries", type=int,
+                        default=3, help="失敗重試次數（非 429）。")
+    parser.add_argument("--backoff", type=float,
+                        default=0.3, help="重試退避因子（非 429）。")
     parser.add_argument(
         "--max-429-retries",
         type=int,
         default=-1,
         help="同一 BAN 碰到 429 的最大重試次數；-1 代表無限重試。",
     )
-    parser.add_argument("--timeout", type=float, default=10.0, help="單次請求逾時秒數。")
+    parser.add_argument("--timeout", type=float,
+                        default=10.0, help="單次請求逾時秒數。")
     parser.add_argument(
         "--cooldown-on-warn",
         type=float,
@@ -114,9 +124,9 @@ def _count_nested(d: Dict) -> str:
     try:
         bans = len(d)
         years = sum(len(v) for v in d.values() if isinstance(v, dict))
-        return f"{bans} 個BAN / {years} 年度"
+        return f"{bans} 個BAN / {years} 個年度資料"
     except Exception:
-        return "0 個BAN / 0 年度"
+        return "0 個BAN / 0 個年度資料"
 
 
 def main() -> None:
@@ -154,7 +164,8 @@ def main() -> None:
 
     # 初始化生成器與 HTTP session
     gen = uniform_number_stream(start_valid)
-    session = create_session(pool_size=args.pool_size, retries=args.retries, backoff=args.backoff)
+    session = create_session(pool_size=args.pool_size,
+                             retries=args.retries, backoff=args.backoff)
 
     processed = 0
     t0 = time.time()

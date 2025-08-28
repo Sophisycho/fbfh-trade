@@ -74,7 +74,7 @@ cd fbfh-trade
 ### 1) 批次掃描（評級）
 
 ```bash
-python scripts/runner.py --year 113 --sleep 0.1
+python3 -m scripts.runner
 ```
 
 **常用參數**

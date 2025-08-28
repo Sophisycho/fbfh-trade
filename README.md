@@ -47,7 +47,7 @@
 ## 資料流程
 
 ```
-runner.py  →  取得評級資料（hits.json 有更新時自動執行 main.run_pipeline → company_details.json → company_details.xlsx）
+scripts/runner.py  →  取得評級資料（hits.json 有更新時自動執行 build_and_export.run_pipeline → company_details.json → company_details.xlsx）
    ├─ ok.json   （所有正常回應）
    ├─ hits.json （評級 A~K 的命中）
    └─ state.json（續跑進度）
@@ -74,7 +74,7 @@ cd fbfh-trade
 ### 1) 批次掃描（評級）
 
 ```bash
-python runner.py --year 113 --sleep 0.1
+python scripts/runner.py --year 113 --sleep 0.1
 ```
 
 **常用參數**
@@ -86,14 +86,14 @@ python runner.py --year 113 --sleep 0.1
 
 * `OK <統編> ... name_zh=<公司名稱>`：表示**正常回應**，寫入 `ok.json`。
 * `HIT <統編> ... import=<代碼> export=<代碼>`：為**評級 A\~K 命中**，寫入 `hits.json`。
-  `runner.py` 會在 `hits.json` 有新增時自動產生/匯出 `company_details.json` 與 `company_details.xlsx`。
+  `scripts/runner.py` 會在 `hits.json` 有新增時自動產生/匯出 `company_details.json` 與 `company_details.xlsx`。
 
 ### 2) （可選）重新生成詳細資料並匯出 Excel
 
 如需重新生成可手動執行：
 
 ```bash
-python main.py
+python scripts/build_and_export.py
 ```
 
 ---

@@ -4,7 +4,7 @@
 """
 runner.py
 主流程入口：產生合法統編、呼叫 API、解析結果、持久化、與進度顯示。
-- 改用 simple_logger 輸出（進度亦改為 logger，每 N 筆一行）
+- 改用內建 logger 輸出（進度亦改為 logger，每 N 筆一行）
 - 新增 --cooldown-on-warn 參數供 429 退避基準秒數使用
 - 啟動時輸出現有 ok/hits 的統計，方便確認不是空集合起跑
 """
@@ -15,9 +15,9 @@ import sys
 import time
 from typing import Optional, Dict
 
-import simple_logger as log
+import fbfh_trade.logger as log
 
-from persistence import (
+from fbfh_trade.persistence import (
     load_state,
     save_state,
     load_json,
@@ -27,17 +27,13 @@ from persistence import (
     OK_PATH,
     BASE_DIR,
 )
-from vat_utils import uniform_number_stream
-# 產生合法統編
-from http_utils import create_session
-# Session 與重試
-from api_client import post_company_with_429_retry
-# 單筆 API 呼叫與 429 重試
-from parsing_utils import pick_year_row, is_A_to_K, row_is_normal, upsert_nested
-# 解析回應資料
+from fbfh_trade.vat import uniform_number_stream  # 產生合法統編
+from fbfh_trade.http import create_session  # Session 與重試
+from fbfh_trade.api import post_company_with_429_retry  # 單筆 API 呼叫與 429 重試
+from fbfh_trade.parsing import pick_year_row, is_A_to_K, row_is_normal, upsert_nested  # 解析回應資料
 from pathlib import Path
-from company_details_builder import build_and_save
-from export_company_details import main as export_excel
+from fbfh_trade.company.builder import build_and_save
+from fbfh_trade.company.exporter import main as export_excel
 
 COMPANY_DETAILS_PATH = BASE_DIR / "company_details.json"
 

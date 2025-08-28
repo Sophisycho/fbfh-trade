@@ -1,4 +1,4 @@
-# simple_logger.py
+# logger.py
 # -*- coding: utf-8 -*-
 """
 A lightweight, importable logging utility with level toggles and optional colors/file output.
@@ -7,7 +7,7 @@ A lightweight, importable logging utility with level toggles and optional colors
     PRINT_DEBUG, PRINT_INFO, PRINT_WARN, PRINT_ERROR, PRINT_SUCCESS, USE_COLOR, LOG_TO_FILE
 - Customize LOG_FILE_PATH to enable file logging.
 - Usage:
-    import simple_logger as log
+    from fbfh_trade import logger as log
     log.PRINT_DEBUG = 1
     log.info("Hello")
 """

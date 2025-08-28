@@ -22,10 +22,11 @@ from typing import Dict, Any, List
 
 # === 取得應用程式根目錄（exe 同目錄 / 或腳本目錄） ===
 def get_app_dir() -> Path:
-    """回傳應用程式根目錄：PyInstaller 下為 exe 同目錄，否則為此檔案所在目錄。"""
+    """回傳應用程式根目錄：PyInstaller 下為 exe 同目錄，否則為專案根目錄。"""
     if getattr(sys, "frozen", False) and hasattr(sys, "executable"):
         return Path(sys.executable).resolve().parent
-    return Path(__file__).resolve().parent
+    # 模組已移至 fbfh_trade 封裝內，因此非 frozen 模式需往上兩層以取得專案根目錄。
+    return Path(__file__).resolve().parent.parent
 
 # === 設定 ===
 BASE_DIR = get_app_dir()

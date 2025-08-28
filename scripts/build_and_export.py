@@ -11,10 +11,10 @@ from typing import Any, Dict, Optional, Tuple
 
 from openpyxl import load_workbook
 
-import simple_logger as log
-from company_details_builder import build_and_save
-from export_company_details import main as export_excel
-from persistence import BASE_DIR  # 關鍵：exe 同目錄
+import fbfh_trade.logger as log
+from fbfh_trade.company.builder import build_and_save
+from fbfh_trade.company.exporter import main as export_excel
+from fbfh_trade.persistence import BASE_DIR  # 關鍵：exe 同目錄
 
 INPUT_JSON_NAME = "hits.json"
 OUTPUT_JSON_NAME = "company_details.json"

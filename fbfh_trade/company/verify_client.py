@@ -29,7 +29,7 @@ try:
 except Exception:
     _HAS_BS4 = False
 
-import simple_logger as log
+import fbfh_trade.logger as log
 
 
 API_ENDPOINT = "https://fbfh.trade.gov.tw/fb/web/queryBasicf.do"
